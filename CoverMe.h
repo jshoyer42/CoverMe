@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -116,6 +118,7 @@ public:
 	
 	void read_input() {
 	
+		// Open file and check success
 		ifstream input_file;
 		input_file.open("CoverMe.in");
 		if (!input_file.is_open()) {
@@ -123,6 +126,7 @@ public:
 			exit(1);
 		}
 
+		// Read in the day number
 		string junk;
 		int day_num;
 
@@ -133,6 +137,7 @@ public:
 
 		int num_pereks_in;
 
+		// Read in Perek data
 		// Number of Pereks: 6
 		input_file >> junk >> junk >> junk >> num_pereks_in;
 
@@ -154,6 +159,7 @@ public:
 
 		int num_mav_in;
 
+		// Read in maavar number
 		// Number needed for Maavar: 2
 		input_file >> junk >> junk >> junk >> junk >> num_mav_in;
 
@@ -170,6 +176,7 @@ public:
 		string bool_mav;
 
 
+		// Read in Person data
 		// Joey TF NO
 		// OFF: Chug_B Limmud Chug_A Avodah Peulat Agam
 		// VAAD : Chug_B Avodah Chug_A Limmud Peulat Agam
@@ -182,6 +189,8 @@ public:
 			Vaad obj;
 			Vaad * pointer;
 
+			// Check the hash table for the vaad data, we want the pointers to be global for the people
+			// Check back to make sure this works
 			if (vaad_set.find(vaad_en_in) == vaad_set.end()) {
 				obj = Vaad(vaad_en_in);
 				pointer = &obj;
@@ -192,7 +201,7 @@ public:
 				pointer->add_one();
 			}
 
-
+			// Read in preferences
 			vector<string> offs_in;
 			offs_in.reserve(num_pereks);
 			vector<string> vaads_in;
@@ -213,6 +222,7 @@ public:
 
 			}
 
+			// Initialize the person object and add to the vector
 			// Person(string name_in, bool maavar_in, vector<string> off_prefs_in, vector<string> vaad_prefs_in, Vaad * vaad_in)
 			Person counselor = Person(name_in, maav_helper(bool_mav), 
 				offs_in, vaads_in, pointer);
@@ -220,13 +230,13 @@ public:
 		}
 
 	
+		input_file.close(); // close file
 	}
 
 	void generate(){
 	/*
 	Steps:
-	1. Assign maavar -> give maavar people their de+		offs_in	{ size=6 }	std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > >
-sired vaad and off
+	1. Assign maavar -> give maavar people their desired vaad and off
 	1a. If no one wants maavar, assign from back to front
 	2. Assign remaining Vaads
 	3. Assign remaining Offs
@@ -258,6 +268,7 @@ private:
 	}
 
 	Vaad_enum vaad_helper(string string_in) {
+		// String to enum convertor
 		// Vaad_enum : char { TF, PE, YM, OTHER, NONE };
 		if (string_in.compare("TF") == 0) {
 			return Vaad_enum::TF;
@@ -274,10 +285,10 @@ private:
 	}
 
 	bool maav_helper(string maav_in) {
-
+		// string to bool conversion for maavar
 		if (maav_in.compare("YES") == 0) {
+			num_maav_req++; 
 			return true;
-			num_maav_req++;
 		}
 		return false;
 
