@@ -1,0 +1,40 @@
+Day number: 3
+
+Number of Pereks: 6
+Chug_A 9:45 4
+Agam 10:45 3
+Limmud 11:45 2
+Peulat: 2:30 5
+Avodah 3:30 4
+Chug_B 5:30 6
+
+Number needed for Maavar: 2
+
+Number of Staff: 9
+Joey TF NO
+OFF: Chug_B Limmud Chug_A Avodah Peulat Agam
+VAAD: Chug_B Avodah Chug_A Limmud Peulat Agam
+Elly PE YES
+OFF: Limmud Chug_B Avodah Chug_A Peulat Agam
+VAAD: Limmud Chug_A Avodah Chug_B Peulat Agam
+Mannes PE YES
+OFF: Avodah Limmud Chug_B Peulat Chug_A Agam
+VAAD: Limmud Avodah Chug_B Peulat Chug_A Agam
+Max YM NO
+OFF: Peulat Avodah Chug_A Chug_B Limmud Agam
+VAAD: Avodah Chug_A Peulat Limmud Chug_B Agam
+Isaac YM YES
+OFF: Agam Limmud Peulat Chug_B Chug_A Avodah
+VAAD: Peulat Chug_B Agam Limmud Chug_A Avodah
+Lily OTHER NO
+OFF: Chug_B Chug_A Agam Peulat Limmud Avodah
+VAAD: Limmud Chug_A Peulat Agam Chug_B Avodah
+Rena PE NO
+OFF: Avodah Chug_A Peulat Limmud Chug_B Agam
+VAAD: Agam Chug_A Peulat Avodah Chug_B Limmud
+Hannah TF NO
+OFF: Avodah Peulat Chug_B Limmud Agam Chug_A
+VAAD: Agam Limmud Chug_A Peulat Avodah Chug_B
+Alex YM YES
+OFF: Limmud Chug_A Peulat Agam Chug_B Avodah
+VAAD: Avodah Agam Peulat Chug_B Limmud, Chug_A
