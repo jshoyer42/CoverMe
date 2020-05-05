@@ -12,8 +12,10 @@
 
 using namespace std;
 
+// Enum class for the Vaad options (as of 2019)
 enum class Vaad_enum : char { TF, PE, YM, OTHER, NONE };
 
+// Forward Declarations
 class Vaad;
 class Perek;
 class Schedule;
@@ -29,7 +31,7 @@ public:
 		off_prefs = off_prefs_in;
 		vaad_prefs = vaad_prefs_in;
 		vaad = vaad_in;
-	}
+	} // Constructor
 
 
 
@@ -49,7 +51,7 @@ private:
 	friend class Perek;
 	friend class Schedule;
 
-};
+}; // Person class
 
 class Vaad {
 public:
@@ -57,7 +59,7 @@ public:
 	Vaad(Vaad_enum vaad_in) {
 		vaad = vaad_in;
 		num_people++;
-	}
+	} // Constructor
 
 
 	void add_one() {
@@ -75,7 +77,7 @@ private:
 	friend class Perek;
 	friend class Schedule;
 
-};
+}; // Vaad Class
 
 class Perek {
 
@@ -88,7 +90,7 @@ public:
 		name = name_in;
 		time = time_in;
 
-	}
+	} // Constructor
 
 
 
@@ -110,11 +112,11 @@ private:
 	vector<Person> off;
 
 
-};
+}; // Perek class
 
 class Schedule {
 public:
-	Schedule() {};
+	Schedule() {}; // Only needs default constructor
 	
 	void read_input() {
 	
@@ -155,7 +157,7 @@ public:
 			input_file >> perek_name_in >> time_in >> num_people_in;
 			pereks.emplace_back(num_people_in, i, perek_name_in, time_in);
 
-		}
+		} // end loop
 
 		int num_mav_in;
 
@@ -212,7 +214,7 @@ public:
 				input_file >> junk;
 				offs_in.push_back(junk);
 			
-			}
+			} // end loop
 
 			input_file >> junk;
 
@@ -220,18 +222,18 @@ public:
 				input_file >> junk;
 				vaads_in.push_back(junk);
 
-			}
+			} // end loop
 
 			// Initialize the person object and add to the vector
 			// Person(string name_in, bool maavar_in, vector<string> off_prefs_in, vector<string> vaad_prefs_in, Vaad * vaad_in)
 			Person counselor = Person(name_in, maav_helper(bool_mav), 
 				offs_in, vaads_in, pointer);
 			people.push_back(counselor);
-		}
+		} // end loop
 
 	
 		input_file.close(); // close file
-	}
+	} // read_input
 
 	void generate(){
 	/*
@@ -244,20 +246,35 @@ public:
 	
 	*/
 
-		cout << "yeh" << endl;
+	// get order
+		start_order = get_order();
 
-	};
+	// Assign maavar
+		maavar_staff.reserve(num_maavar);
+		num_maav_needed = num_maavar - num_maav_req;
+	
+			// assign people who didn't request maavar 
+		while(num_maav_needed > 0) {
+				assign_maavar();
+		}
+		
+
+
+	}; // generate
 
 private:
+	int start_order;
 	int num_vaads = 4;
 	int num_people;
 	int num_maavar;
 	int num_maav_req = 0;
+	int num_maav_needed;
 	int num_pereks;
 	int date;
 	vector<Person> people;
 	//vector<Vaad> vaads;
 	vector<Perek> pereks;
+	vector<Person> maavar_staff;
 
 	unordered_map<Vaad_enum, Vaad *> vaad_set;
 
@@ -282,7 +299,7 @@ private:
 			return Vaad_enum::NONE;
 		}
 
-	}
+	} // vaad helper
 
 	bool maav_helper(string maav_in) {
 		// string to bool conversion for maavar
@@ -292,9 +309,13 @@ private:
 		}
 		return false;
 
-	}
+	} // maavar helper
 
-	void assign_maavar() {};
+	void assign_maavar() {
+	
+
+	
+	};
 
 	void vaads_func() {};
 
