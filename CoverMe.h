@@ -40,6 +40,8 @@ private:
 	bool off_assigned = false;
 	bool complete = false;
 	
+	bool on_maav = false;
+
 	bool maavar = false;
 
 	string name;
@@ -67,6 +69,8 @@ public:
 	}
 
 private:
+	bool assigned = false;
+	
 	Vaad_enum vaad;
 	int num_people = 0;
 
@@ -102,6 +106,7 @@ private:
 	
 	int num_needed;
 	int max_off;
+	int num_off = 0;
 	int order;
 
 	string name;
@@ -111,6 +116,7 @@ private:
 	vector<Person> vaad;
 	vector<Person> off;
 
+	friend class Schedule;
 
 }; // Perek class
 
@@ -156,6 +162,7 @@ public:
 
 			input_file >> perek_name_in >> time_in >> num_people_in;
 			pereks.emplace_back(num_people_in, i, perek_name_in, time_in);
+			perek_map[perek_name_in] = &pereks[i];
 
 		} // end loop
 
@@ -251,14 +258,41 @@ public:
 
 	// Assign maavar
 		maavar_staff.reserve(num_maavar);
-		num_maav_needed = num_maavar - num_maav_req;
+		num_maav_needed = num_maavar;
 	
-			// assign people who didn't request maavar 
-		while(num_maav_needed > 0) {
+		// Traverse 
+		int counter = start_order;
+		for (int i = 0; i < num_people; i++) {
+
+			if (num_maav_needed == 0) {
+				break;
+			}
+
+			if (people[counter].maavar) {
+				people[counter].on_maav = true;
+				maavar_staff.push_back(&people[counter]);
+				num_maav_needed--;
+			}
+
+
+			counter++;
+			if (counter == num_people) {
+				counter = 0;
+			}
+		}
+
+		// assign people who didn't request maavar 
+		if(num_maav_needed > 0) {
 				assign_maavar();
 		}
+
+		// Give maav people their vaads and offs
+		give_maav_prefs();
 		
 
+		// Give remaining vaads and offs
+		give_remaining_vaads();
+		give_remaining_offs();
 
 	}; // generate
 
@@ -274,9 +308,10 @@ private:
 	vector<Person> people;
 	//vector<Vaad> vaads;
 	vector<Perek> pereks;
-	vector<Person> maavar_staff;
+	vector<Person *> maavar_staff;
 
 	unordered_map<Vaad_enum, Vaad *> vaad_set;
+	unordered_map<string, Perek *> perek_map;
 
 
 	int get_order() {
@@ -313,12 +348,141 @@ private:
 
 	void assign_maavar() {
 	
+		int counter = start_order - 1;
+		for (int i = 0; i < num_maav_needed; i++) {
 
+			if (counter == -1) {
+				counter = num_people - 1;
+			}
+
+			if (num_maav_needed == 0) {
+				break;
+			}
+
+			people[counter].on_maav = true;
+			maavar_staff.push_back(&people[counter]);
+			num_maav_needed--;
+			
+
+
+			counter--;
+		}
 	
 	};
 
-	void vaads_func() {};
+	void give_maav_prefs() {
 
-	void offs_func() {};
+		// give the vaads
+		for (auto &counselor : maavar_staff) {
+
+			give_vaad(*counselor);
+			give_maav_offs(*counselor);
+		}
+
+	}
+
+	void give_vaad(Person &counselor) {
+		if (!counselor.vaad_assigned) {
+
+			for (auto pref : counselor.vaad_prefs) {
+				if (counselor.on_maav) {
+					// Case where the counselor is on maavar
+					// We check that the perek is free
+					// and that it isn't a maavar perek
+					if (!perek_map[pref]->has_vaad &&
+						(perek_map[pref]->order > 2)) {
+						counselor.vaad->meeting_perek = pref;
+						counselor.vaad->assigned = true;
+						counselor.vaad_assigned = true;
+						perek_map[pref]->max_off = num_people - perek_map[pref]->num_needed - counselor.vaad->num_people; // calculate the max that can be off
+						break;
+					}
+				} else {
+					// Case for non-maavar
+					if (!perek_map[pref]->has_vaad) {
+						counselor.vaad->meeting_perek = pref;
+						counselor.vaad->assigned = true;
+						counselor.vaad_assigned = true;
+						perek_map[pref]->max_off = num_people - perek_map[pref]->num_needed - counselor.vaad->num_people; // calculate the max that can be off
+						break;
+					}
+				}
+			}
+		} else {
+			counselor.vaad_assigned = true;
+		}
+	}
+
+	void give_maav_offs(Person &counselor) {
+
+		for (auto pref : counselor.off_prefs) {
+			
+			if (!counselor.off_assigned &&
+				(perek_map[pref]->order > 2) && 
+				(pref != counselor.vaad->meeting_perek)) {
+
+				perek_map[pref]->off.push_back(counselor);
+				perek_map[pref]->num_off++;
+				counselor.off_assigned = true;
+			}
+			else {
+				if (pref != counselor.vaad->meeting_perek) {
+					perek_map[pref]->on.push_back(counselor);
+				}
+			}
+
+		}
+
+	}
+
+	void give_off(Person &counselor) {
+
+		for (auto pref : counselor.off_prefs) {
+
+			if (!counselor.off_assigned &&
+				((int)perek_map[pref]->on.size() < perek_map[pref]->max_off) &&
+				(pref != counselor.vaad->meeting_perek)) {
+
+				perek_map[pref]->off.push_back(counselor);
+				perek_map[pref]->num_off++;
+				counselor.off_assigned = true;
+			}
+			else {
+				if (pref != counselor.vaad->meeting_perek) {
+					perek_map[pref]->on.push_back(counselor);
+				}
+			}
+
+		}
+	}
+
+	void give_remaining_vaads() {
+
+		int counter = start_order;
+		for (int i = 0; i < num_people; i++) {
+
+			give_vaad(people[counter]);
+
+			counter++;
+			if (counter == num_people) {
+				counter = 0;
+			}
+		}
+
+	}
+
+	void give_remaining_offs() {
+	
+		int counter = start_order;
+		for (int i = 0; i < num_people; i++) {
+
+			give_off(people[counter]);
+
+			counter++;
+			if (counter == num_people) {
+				counter = 0;
+			}
+		}	
+	};
 
 };
