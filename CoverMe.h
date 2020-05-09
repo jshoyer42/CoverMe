@@ -25,12 +25,12 @@ class Person {
 public:
 	Person() {};
 
-	Person(string name_in, bool maavar_in, vector<string> off_prefs_in, vector<string> vaad_prefs_in, Vaad * vaad_in) {
+	Person(string name_in, bool maavar_in, vector<string> off_prefs_in, vector<string> vaad_prefs_in, Vaad_enum vaad_in) {
 		name = name_in;
 		maavar = maavar_in;
 		off_prefs = off_prefs_in;
 		vaad_prefs = vaad_prefs_in;
-		vaad = vaad_in;
+		vaad_en = vaad_in;
 	} // Constructor
 
 
@@ -43,6 +43,8 @@ private:
 	bool on_maav = false;
 
 	bool maavar = false;
+
+	Vaad_enum vaad_en;
 
 	string name;
 	vector<string> off_prefs;
@@ -60,7 +62,7 @@ public:
 	Vaad() {};
 	Vaad(Vaad_enum vaad_in) {
 		vaad = vaad_in;
-		num_people++;
+		//num_people++;
 	} // Constructor
 
 
@@ -195,20 +197,26 @@ public:
 
 			Vaad_enum vaad_en_in = vaad_helper(vaad_in);
 
-			Vaad obj;
-			Vaad * pointer;
+			//Vaad obj;
+			//Vaad * pointer;
 
 			// Check the hash table for the vaad data, we want the pointers to be global for the people
 			// Check back to make sure this works
 			if (vaad_set.find(vaad_en_in) == vaad_set.end()) {
-				obj = Vaad(vaad_en_in);
-				pointer = &obj;
-				vaad_set[vaad_en_in] = pointer;
+				//Vaad obj = Vaad(vaad_en_in);
+				//pointer = &obj;
+				//vaad_set[vaad_en_in] = pointer;
+
+				vaad_set[vaad_en_in] = Vaad(vaad_en_in);
+				//pointer = vaad_set[vaad_en_in];
 			}
 			else {
-				pointer = vaad_set[vaad_en_in];
-				pointer->add_one();
+				//pointer = vaad_set[vaad_en_in];
+				//pointer->add_one();
 			}
+
+			vaad_set[vaad_en_in].add_one();
+			
 
 			// Read in preferences
 			vector<string> offs_in;
@@ -234,9 +242,16 @@ public:
 			// Initialize the person object and add to the vector
 			// Person(string name_in, bool maavar_in, vector<string> off_prefs_in, vector<string> vaad_prefs_in, Vaad * vaad_in)
 			Person counselor = Person(name_in, maav_helper(bool_mav), 
-				offs_in, vaads_in, pointer);
+				offs_in, vaads_in, vaad_en_in);
 			people.push_back(counselor);
 		} // end loop
+
+
+		for (auto &counselor : people) {
+
+			counselor.vaad = &vaad_set[counselor.vaad_en];
+
+		}
 
 	
 		input_file.close(); // close file
@@ -293,7 +308,7 @@ public:
 		// Give remaining vaads and offs
 		give_remaining_vaads();
 		give_remaining_offs();
-
+		cout << "done" << endl;
 	}; // generate
 
 private:
@@ -310,8 +325,11 @@ private:
 	vector<Perek> pereks;
 	vector<Person *> maavar_staff;
 
-	unordered_map<Vaad_enum, Vaad *> vaad_set;
+	unordered_map<Vaad_enum, Vaad> vaad_set;
 	unordered_map<string, Perek *> perek_map;
+
+
+	// METHODS
 
 
 	int get_order() {
@@ -376,6 +394,12 @@ private:
 		for (auto &counselor : maavar_staff) {
 
 			give_vaad(*counselor);
+			//give_maav_offs(*counselor);
+		}
+
+		for (auto &counselor : maavar_staff) {
+
+			//give_vaad(*counselor);
 			give_maav_offs(*counselor);
 		}
 
@@ -395,6 +419,9 @@ private:
 						counselor.vaad->assigned = true;
 						counselor.vaad_assigned = true;
 						perek_map[pref]->max_off = num_people - perek_map[pref]->num_needed - counselor.vaad->num_people; // calculate the max that can be off
+						perek_map[pref]->has_vaad = true;
+						perek_map[pref]->vaad.push_back(counselor);
+						perek_map[pref]->vaad_assigned = counselor.vaad_en;
 						break;
 					}
 				} else {
@@ -404,12 +431,17 @@ private:
 						counselor.vaad->assigned = true;
 						counselor.vaad_assigned = true;
 						perek_map[pref]->max_off = num_people - perek_map[pref]->num_needed - counselor.vaad->num_people; // calculate the max that can be off
+						perek_map[pref]->has_vaad = true;
+						perek_map[pref]->vaad.push_back(counselor);
+						perek_map[pref]->vaad_assigned = counselor.vaad_en;
 						break;
 					}
 				}
 			}
 		} else {
 			counselor.vaad_assigned = true;
+			perek_map[counselor.vaad->meeting_perek]->vaad.push_back(counselor);
+
 		}
 	}
 
