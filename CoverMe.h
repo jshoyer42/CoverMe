@@ -304,11 +304,13 @@ public:
 		// Give maav people their vaads and offs
 		give_maav_prefs();
 		
+		// set the max offs for the pereks without vaads
+		set_other_maxes();
 
 		// Give remaining vaads and offs
 		give_remaining_vaads();
 		give_remaining_offs();
-		cout << "done" << endl;
+		output();
 	}; // generate
 
 private:
@@ -406,7 +408,12 @@ private:
 	}
 
 	void give_vaad(Person &counselor) {
-		if (!counselor.vaad_assigned) {
+		
+		if (counselor.vaad_assigned) {
+			return;
+		}
+
+		if (!counselor.vaad_assigned && !counselor.vaad->assigned) {
 
 			for (auto pref : counselor.vaad_prefs) {
 				if (counselor.on_maav) {
@@ -469,10 +476,14 @@ private:
 
 	void give_off(Person &counselor) {
 
+		if (counselor.off_assigned) {
+			return;
+		}
+
 		for (auto pref : counselor.off_prefs) {
 
 			if (!counselor.off_assigned &&
-				((int)perek_map[pref]->on.size() < perek_map[pref]->max_off) &&
+				((int)perek_map[pref]->off.size() < perek_map[pref]->max_off) &&
 				(pref != counselor.vaad->meeting_perek)) {
 
 				perek_map[pref]->off.push_back(counselor);
@@ -493,6 +504,7 @@ private:
 		int counter = start_order;
 		for (int i = 0; i < num_people; i++) {
 
+			
 			give_vaad(people[counter]);
 
 			counter++;
@@ -516,5 +528,57 @@ private:
 			}
 		}	
 	};
+
+	void set_other_maxes() {
+
+		for (auto &perek : pereks) {
+
+			if (!perek.has_vaad) {
+				perek.max_off = num_people - perek.num_needed;
+			}
+
+		}
+
+	}
+
+	void output() {
+
+		cout << "On Maavar:" << endl;
+		for (auto &staff : maavar_staff) {
+			cout << staff->name << " ";
+		}
+		cout << endl;
+		cout << endl;
+
+		for (auto &perek : pereks) {
+
+			cout << perek.name << endl;
+
+			cout << "On: " << endl;
+
+			for (auto &on : perek.on) {
+				cout << on.name << " ";
+			}
+			cout << endl;
+
+			cout << "Vaad: " << endl;
+
+			for (auto &vaads : perek.vaad) {
+				cout << vaads.name << " ";
+			}
+			cout << endl;
+
+			cout << "Off: " << endl;
+
+			for (auto &off : perek.off) {
+				cout << off.name << " ";
+			}
+			cout << endl;
+			cout << endl;
+
+		}
+
+
+	}
 
 };
